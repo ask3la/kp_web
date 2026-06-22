@@ -1,0 +1,55 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm mb-3">
+  <div class="card-header fw-semibold">Создать группу</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin_create_group') }}" class="row g-2">
+      <div class="col-md-3"><input class="form-control" name="name" placeholder="Название" required></div>
+      <div class="col-md-3"><input class="form-control" name="code" placeholder="group.code" required></div>
+      <div class="col-md-3"><input class="form-control" name="group_type" value="department" required></div>
+      <div class="col-md-2">
+        <select class="form-select" name="parent_id">
+          <option value="">Без родителя</option>
+          {% for p in groups %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">+</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold">Группы</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>ID</th><th>Название</th><th>Code</th><th>Тип</th><th>Пользователей</th><th>Админ-группа</th><th></th></tr></thead>
+      <tbody>
+        {% for g in groups %}
+        <tr>
+          <td>{{ g.id }}</td>
+          <td>{{ g.name }}</td>
+          <td>{{ g.code }}</td>
+          <td>{{ g.group_type }}</td>
+          <td>{{ g.users_count }}</td>
+          <td>
+            {% if g.is_admin_group %}<span class="badge text-bg-primary">Да</span>{% else %}<span class="badge text-bg-secondary">Нет</span>{% endif %}
+          </td>
+          <td class="actions-col">
+            <div class="user-actions">
+              <a class="btn btn-sm btn-outline-secondary node-action-btn" href="{{ url_for('admin_group_detail', group_id=g.id) }}">Открыть</a>
+              <form method="post" action="{{ url_for('admin_delete_group', group_id=g.id) }}" onsubmit="return confirm('Удалить группу?')">
+                <button class="btn btn-sm btn-outline-danger icon-btn" type="submit" title="Удалить группу">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-body-secondary">Групп нет</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h2 class="h5 mb-1">ACL Management</h2>
+    <p class="text-body-secondary mb-0">Create resources and groups, bind users, and assign permissions at group level.</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Create Resource</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_create_resource') }}" class="vstack gap-2">
+          <input class="form-control" name="name" placeholder="Resource name" required>
+          <input class="form-control" name="code" placeholder="resource.code" required>
+          <input class="form-control" name="path" placeholder="/shared/contracts" required>
+          <input class="form-control" name="resource_type" value="folder" placeholder="folder">
+          <input class="form-control" name="size_limit_mb" type="number" min="0" value="0" placeholder="size_limit_mb (0 = unlimited)">
+          <select class="form-select" name="parent_id">
+            <option value="">No parent</option>
+            {% for r in data.resources %}<option value="{{ r.id }}">{{ r.name }} ({{ r.path }})</option>{% endfor %}
+          </select>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_hidden" id="aclHidden">
+            <label class="form-check-label" for="aclHidden">Hidden</label>
+          </div>
+          <button class="btn btn-primary" type="submit">Create resource</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Create Group</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_create_group') }}" class="vstack gap-2">
+          <input class="form-control" name="name" placeholder="Group name" required>
+          <input class="form-control" name="code" placeholder="group.code" required>
+          <input class="form-control" name="group_type" placeholder="department" required>
+          <select class="form-select" name="parent_id">
+            <option value="">No parent</option>
+            {% for g in data.groups %}<option value="{{ g.id }}">{{ g.name }} ({{ g.code }})</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary" type="submit">Create group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Bind User To Group</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_bind_user_group') }}" class="vstack gap-2">
+          <select class="form-select" name="user_id" required>
+            {% for u in data.users %}<option value="{{ u.id }}">{{ u.username }} ({{ u.role }})</option>{% endfor %}
+          </select>
+          <select class="form-select" name="group_id" required>
+            {% for g in data.groups %}<option value="{{ g.id }}">{{ g.name }} ({{ g.code }})</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary" type="submit">Bind</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Grant Permission To Group</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_grant_permission') }}" class="vstack gap-2">
+          <select class="form-select" name="group_id" required>
+            {% for g in data.groups %}<option value="{{ g.id }}">{{ g.name }} ({{ g.code }})</option>{% endfor %}
+          </select>
+          <select class="form-select" name="resource_id">
+            <option value="">Global permission</option>
+            {% for r in data.resources %}<option value="{{ r.id }}">{{ r.name }} ({{ r.path }})</option>{% endfor %}
+          </select>
+          <select class="form-select" name="permission_code" required>
+            {% for p in ["view","read","write","delete","share","manage_users","manage_groups","manage_nodes","manage_volumes","manage_permissions","admin_panel"] %}
+            <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+          </select>
+          <select class="form-select" name="allow">
+            <option value="1">Allow</option>
+            <option value="0">Deny</option>
+          </select>
+          <button class="btn btn-primary" type="submit">Save permission</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold">Current Permissions</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>ID</th><th>Group</th><th>Resource</th><th>Permission</th><th>Allow</th></tr></thead>
+      <tbody>
+        {% for p in data.permissions %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.group_id }}</td>
+          <td>{{ p.resource_id if p.resource_id else "global" }}</td>
+          <td>{{ p.permission_code }}</td>
+          <td>{{ "yes" if p.allow else "no" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-body-secondary">No permissions</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
