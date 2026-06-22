@@ -1,0 +1,106 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="h5 mb-1">Группа #{{ group.id }}: {{ group.name }}</h2>
+      <div class="text-body-secondary">Code: {{ group.code }} | Type: {{ group.group_type }} | Parent: {{ group.parent_id or '-' }}</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin_groups') }}">К списку групп</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Пользователи группы</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_group_add_member', group_id=group.id) }}" class="row g-2 mb-3">
+          <div class="col-md-9">
+            <select class="form-select" name="user_id" required>
+              <option value="">Добавить пользователя...</option>
+              {% for u in non_members %}<option value="{{ u.id }}">{{ u.username }} ({{ u.role }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Добавить</button></div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>ID</th><th>Username</th><th>Role</th><th></th></tr></thead>
+            <tbody>
+              {% for u in members %}
+              <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.role }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('admin_group_remove_member', group_id=group.id, user_id=u.id) }}" onsubmit="return confirm('Удалить пользователя из группы?')">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-body-secondary">Нет пользователей в группе</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Права группы</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_group_add_permission', group_id=group.id) }}" class="row g-2 mb-3">
+          <div class="col-md-4">
+            <select class="form-select" name="permission_code" required>
+              {% for p in ["view","read","write","delete","share","manage_users","manage_groups","manage_nodes","manage_volumes","manage_permissions","admin_panel"] %}
+              <option value="{{ p }}">{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select" name="resource_id">
+              <option value="">Global</option>
+              {% for r in resources %}<option value="{{ r.id }}">{{ r.name }} ({{ r.path }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" name="allow">
+              <option value="1">Allow</option>
+              <option value="0">Deny</option>
+            </select>
+          </div>
+          <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Добавить</button></div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>ID</th><th>Право</th><th>Ресурс</th><th>Allow</th><th></th></tr></thead>
+            <tbody>
+              {% for p in permissions %}
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.permission_code }}</td>
+                <td>{{ p.resource_name }} <span class="text-body-secondary">{{ p.resource_path }}</span></td>
+                <td>{% if p.allow %}<span class="badge text-bg-success">yes</span>{% else %}<span class="badge text-bg-danger">no</span>{% endif %}</td>
+                <td>
+                  <form method="post" action="{{ url_for('admin_group_remove_permission', group_id=group.id, permission_id=p.id) }}" onsubmit="return confirm('Удалить право?')">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-body-secondary">Права не назначены</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

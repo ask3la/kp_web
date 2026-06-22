@@ -1,0 +1,31 @@
+{
+  "mount_path": "P:\\Projects\\MP\\web\\KP\\alpha_test\\agent\\test\\vol1",
+  "label": "vol1",
+  "quota_gb": 1,
+  "used_bytes": 3735722,
+  "used_gb": 0,
+  "files": [
+    {
+      "file_id": 19,
+      "resource_id": 9,
+      "owner_id": 1,
+      "file_name": "20150907_1703_DIR_300NRUB5_6_2.5.12_sdk-master.bin",
+      "logical_path": "/тест/тест/тест/20150907_1703_DIR_300NRUB5_6_2.5.12_sdk-master.bin",
+      "size_bytes": 3735248,
+      "size_mb": 4,
+      "storage_rel_path": "resource_9/file_19_20150907_1703_DIR_300NRUB5_6_2.5.12_sdk-master.bin",
+      "updated_at": 1776021353
+    },
+    {
+      "file_id": 20,
+      "resource_id": 1,
+      "owner_id": 1,
+      "file_name": "agent_config.example.json",
+      "logical_path": "/agent_config.example.json",
+      "size_bytes": 474,
+      "size_mb": 1,
+      "storage_rel_path": "resource_1/file_20_agent_config.example.json",
+      "updated_at": 1780932355
+    }
+  ]
+}

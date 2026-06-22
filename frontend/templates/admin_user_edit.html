@@ -1,0 +1,105 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-xl-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Редактировать пользователя #{{ user.id }}</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_edit_user', user_id=user.id) }}" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Username</label>
+            <input class="form-control" name="username" value="{{ user.username }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" name="role" id="roleSelect">
+              <option value="employee" {% if user.role == 'employee' %}selected{% endif %}>employee</option>
+              <option value="client" {% if user.role == 'client' %}selected{% endif %}>client</option>
+              <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>admin</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Admin level</label>
+            <select class="form-select" name="admin_level" id="adminLevel">
+              <option value="none" {% if user.admin_level == 'none' %}selected{% endif %}>none</option>
+              <option value="group_admin" {% if user.admin_level == 'group_admin' %}selected{% endif %}>group_admin</option>
+              <option value="org_admin" {% if user.admin_level == 'org_admin' %}selected{% endif %}>org_admin</option>
+              <option value="super_admin" {% if user.admin_level == 'super_admin' %}selected{% endif %}>super_admin</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Scope group</label>
+            <select class="form-select" name="admin_scope_group_id" id="adminScope">
+              <option value="">none</option>
+              {% for g in groups %}
+              <option value="{{ g.id }}" {% if user.admin_scope_group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin_users') }}">Назад</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold">Группы пользователя</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin_user_add_group', user_id=user.id) }}" class="d-flex gap-2 mb-3">
+          <select class="form-select" name="group_id" required>
+            <option value="">Добавить в группу...</option>
+            {% for g in available_groups %}
+            <option value="{{ g.id }}">{{ g.name }} ({{ g.code }})</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-outline-primary" type="submit">Добавить</button>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>ID</th><th>Группа</th><th></th></tr></thead>
+            <tbody>
+              {% for g in member_groups %}
+              <tr>
+                <td>{{ g.id }}</td>
+                <td>
+                  <div>{{ g.name }}</div>
+                  <div class="small text-body-secondary">{{ g.code }}</div>
+                </td>
+                <td class="text-end">
+                  <form method="post" action="{{ url_for('admin_user_remove_group', user_id=user.id, group_id=g.id) }}" onsubmit="return confirm('Удалить пользователя из группы?')">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="text-body-secondary">Пользователь пока не состоит в группах</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const role = document.getElementById('roleSelect');
+    const level = document.getElementById('adminLevel');
+    const scope = document.getElementById('adminScope');
+    function sync(){
+      const isAdmin = role.value === 'admin';
+      level.disabled = !isAdmin;
+      scope.disabled = !isAdmin;
+      if(!isAdmin){ level.value = 'none'; scope.value = ''; }
+    }
+    role.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm mb-3">
+  <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+    <span>Ресурсы</span>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createResourceModal">Создать ресурс</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Название</th>
+          <th>Code</th>
+          <th>Path</th>
+          <th>Тип</th>
+          <th>Лимит, MB</th>
+          <th>Ноды хранения</th>
+          <th>Hidden</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resources %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.code }}</td>
+          <td>{{ r.path }}</td>
+          <td>{{ r.resource_type }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin_update_resource_limit', resource_id=r.id) }}" class="d-flex gap-2 align-items-center">
+              <input class="form-control form-control-sm" style="max-width:120px;" name="size_limit_mb" type="number" min="0" value="{{ r.size_limit_mb or 0 }}">
+              <button class="btn btn-sm btn-outline-primary" type="submit">OK</button>
+            </form>
+          </td>
+          <td style="min-width:280px;">
+            <form method="post" action="{{ url_for('admin_update_resource_nodes', resource_id=r.id) }}" class="d-flex gap-2 align-items-start">
+              <div class="resource-node-box">
+                {% set selected = resource_node_map.get(r.id, []) %}
+                {% for n in nodes %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="node_ids" id="node_{{ r.id }}_{{ n.id }}" value="{{ n.id }}" {% if n.id in selected %}checked{% endif %}>
+                  <label class="form-check-label small" for="node_{{ r.id }}_{{ n.id }}">{{ n.name }} {% if n.store_all_data %}<span class="text-body-secondary">(store all)</span>{% endif %}</label>
+                </div>
+                {% endfor %}
+              </div>
+              <button class="btn btn-sm btn-outline-primary" type="submit">Сохранить</button>
+            </form>
+          </td>
+          <td>{{ 'yes' if r.is_hidden else 'no' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin_delete_resource', resource_id=r.id) }}" onsubmit="return confirm('Удалить ресурс?')">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-body-secondary">Ресурсов нет</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade admin-scroll-modal" id="createResourceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('admin_create_resource') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Создание ресурса</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="vstack gap-3">
+            <div>
+              <label class="form-label">Название</label>
+              <input class="form-control" name="name" placeholder="Название" required>
+            </div>
+            <div>
+              <label class="form-label">Code</label>
+              <input class="form-control" name="code" placeholder="resource.code" required>
+            </div>
+            <div>
+              <label class="form-label">Path</label>
+              <input class="form-control" name="path" placeholder="/shared/docs" required>
+            </div>
+            <div>
+              <label class="form-label">Тип</label>
+              <input class="form-control" name="resource_type" value="folder">
+            </div>
+            <div>
+              <label class="form-label">Лимит размера (MB)</label>
+              <input class="form-control" name="size_limit_mb" type="number" min="0" value="0">
+              <div class="form-text">0 = без ограничений</div>
+            </div>
+            <div>
+              <label class="form-label">Родитель</label>
+              <select class="form-select" name="parent_id">
+                <option value="">Без родителя</option>
+                {% for p in resources %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="is_hidden" id="isHiddenCreate">
+              <label class="form-check-label" for="isHiddenCreate">Hidden</label>
+            </div>
+            <div>
+              <label class="form-label">Ноды хранения</label>
+              <div class="resource-node-box">
+                {% for n in nodes %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="node_ids" id="create_node_{{ n.id }}" value="{{ n.id }}">
+                  <label class="form-check-label" for="create_node_{{ n.id }}">{{ n.name }} (priority {{ n.storage_priority or 0 }}){% if n.store_all_data %} - store all{% endif %}</label>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="form-text">Если ноды не выбраны: запись идет по настройкам нод (store all / priority).</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-primary">Создать</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold">Настройки сервиса</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin_settings_save') }}" class="row g-3">
+      <div class="col-12">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="enabled" name="enabled" {% if archive.enabled %}checked{% endif %}>
+          <label class="form-check-label" for="enabled">
+            Архивировать личное пространство пользователя при удалении
+          </label>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ресурс для архива</label>
+        <select class="form-select" name="resource_id">
+          <option value="">Не выбран</option>
+          {% for r in resources %}
+          <option value="{{ r.id }}" {% if archive.resource_id == r.id %}selected{% endif %}>{{ r.name }} ({{ r.path }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Папка в ресурсе</label>
+        <input class="form-control" name="folder_path" value="{{ archive.folder_path or '/archives' }}" placeholder="/archives/deleted-users">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Таймаут (сек)</label>
+        <input class="form-control" type="number" min="15" max="1800" name="download_timeout_sec" value="{{ archive.download_timeout_sec or 120 }}">
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary ms-2" href="{{ url_for('admin_dashboard') }}">Назад</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
